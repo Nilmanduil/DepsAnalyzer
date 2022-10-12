@@ -1,0 +1,25 @@
+{
+  "name": "DepsAnalyzer",
+  "version": "0.1.0",
+  "description": "A Node.js CLI to list dependencies and fetch informations from NPM registry",
+  "main": "index.js",
+  "bin": {
+    "deps-analyzer": "bin/deps-analyzer.js"
+  },
+  "repository": "git@github.com:Nilmanduil/DepsAnalyzer.git",
+  "author": "Thibault Goudouneix <nilmanduil@gmail.com>",
+  "license": "GNUv3",
+  "private": false,
+  "type": "module",
+  "keywords": [
+    "cli",
+    "node",
+    "dependencies",
+    "analysis",
+    "security"
+  ],
+  "dependencies": {
+    "commander": "9.4.1",
+    "listr2": "5.0.5"
+  }
+}
