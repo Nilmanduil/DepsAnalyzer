@@ -2,6 +2,7 @@
 
 import { program, Option } from "commander";
 import { Listr } from "listr2";
+import delay from "delay";
 import path from "path";
 import fs from "fs";
 
@@ -22,7 +23,7 @@ program
   .addOption(
     new Option(
       "-w, --workspaces",
-      "if the program is a monorepo, analyze workspaces as well"
+      "if the project is a monorepo, analyze workspaces as well"
     )
       .default(true)
       .implies({ packager: "yarn" })
@@ -41,6 +42,10 @@ program
       .implies({ audit: true })
   )
   .option("-v, --verbose", "display debugging informations", false)
+  .addOption(new Option("-c, --color").hideHelp().default(true))
+  .addOption(
+    new Option("-n, --no-color", "format output with no color").default(false)
+  )
   .option(
     "-f <format>, --format <format>",
     "format of the output (JSON or CSV)",
@@ -53,7 +58,7 @@ program
   )
   .option("-o <file>, --output <file>", "output of the analyze", "stdout")
   .argument("[directory]", "path of the project to analyze", ".")
-  .action((directory, options, command) => {
+  .action(async (directory, options, command) => {
     const {
       p: packagerOption,
       workspaces,
@@ -63,7 +68,9 @@ program
       f: format,
       s: separator,
       o: output,
+      color,
     } = options;
+    const noColor = !color;
 
     const readPackageJson = (jsonPath, filter = true) => {
       const propsToKeep = [
@@ -126,6 +133,7 @@ program
 
     // TODO remove when adding packager detection
     const packager = "yarn";
+    const monorepo = false;
 
     if (verbose) {
       console.warn({
@@ -140,20 +148,64 @@ program
         format,
         separator,
         output,
+        color,
+        noColor,
       });
     }
 
     let dependencies = {};
 
-    const rootPackageJsonPath = path.join(directory, "package.json");
-    const rootPackageJson = readPackageJson(rootPackageJsonPath);
+    const tasks = new Listr([
+      {
+        title: "Parsing root package.json file",
+        task: (ctx, task) => {
+          const rootPackageJsonPath = path.join(directory, "package.json");
+          const rootPackageJson = readPackageJson(rootPackageJsonPath);
+          ctx.rootPackageJsonPath = rootPackageJsonPath;
+          ctx.rootPackageJson = rootPackageJson;
+        },
+      },
+      {
+        title: "Parsing packages package.json files",
+        skip: !monorepo,
+        task: (ctx, task) => {},
+      },
+      {
+        title: "Checking installed versions",
+        task: (ctx, task) => {},
+      },
+      {
+        title: "Fetching info from NPM registry",
+        task: (ctx, task) => {},
+      },
+      {
+        title: "Fetching security info",
+        task: (ctx, task) => {},
+      },
+      {
+        title: "Displaying output",
+        task: async (ctx, task) => {
+          task.output = JSON.stringify(
+            {
+              deps: parseDependencies(ctx.rootPackageJson.dependencies),
+              devDeps: parseDependencies(
+                ctx.rootPackageJson.devDependencies,
+                "dev"
+              ),
+              peerDeps: parseDependencies(
+                ctx.rootPackageJson.peerDependencies,
+                "peer"
+              ),
+            },
+            null,
+            2
+          );
+          await delay(500);
+        },
+        options: { persistentOutput: true, bottomBar: Infinity },
+      },
+    ]);
 
-    console.info({
-      rootPackageJsonPath,
-      rootPackageJson,
-      deps: parseDependencies(rootPackageJson.dependencies),
-      devDeps: parseDependencies(rootPackageJson.devDependencies, "dev"),
-      peerDeps: parseDependencies(rootPackageJson.peerDependencies, "peer"),
-    });
+    const ctx = await tasks.run();
   })
   .parse();
