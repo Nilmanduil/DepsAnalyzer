@@ -4,7 +4,9 @@ import { program, Option } from "commander";
 import { Listr } from "listr2";
 import delay from "delay";
 import path from "path";
-import fs from "fs";
+
+import { readPackageJson } from "../lib/files.js";
+import { parseDependencies } from "../lib/deps-analyzer.js";
 
 program
   .name("deps-analyzer")
@@ -71,65 +73,6 @@ program
       color,
     } = options;
     const noColor = !color;
-
-    const readPackageJson = (jsonPath, filter = true) => {
-      const propsToKeep = [
-        "name",
-        "workspaces",
-        "dependencies",
-        "devDependencies",
-        "peerDependencies",
-      ];
-
-      if (/package.json$/.test(jsonPath)) {
-        try {
-          const packageJsonRawValue = fs.readFileSync(jsonPath);
-          const json = JSON.parse(packageJsonRawValue);
-          const result = {};
-          propsToKeep.forEach((prop) => {
-            result[prop] = json[prop] || {};
-          });
-          return result;
-        } catch (err) {
-          console.error(err);
-          throw new Error(err.message);
-        }
-      }
-    };
-
-    const parseDependencies = (
-      dependencies,
-      type = "runtime",
-      from = "root"
-    ) => {
-      let result = {};
-      Object.keys(dependencies).forEach((key) => {
-        const version = /([~^])?(\d+)\.(\d+|\*).(\d+|\*)[-._]*(.*)$/.exec(
-          dependencies[key]
-        );
-        const parseVersionNumber = (subversion) => {
-          if (/^\d+$/.test(subversion)) return parseInt(subversion);
-          return subversion;
-        };
-
-        const current = {
-          name: key,
-          version: dependencies[key],
-          versionMajor: !!version ? parseVersionNumber(version[2]) : null,
-          versionMinor: !!version ? parseVersionNumber(version[3]) : null,
-          versionPatch: !!version ? parseVersionNumber(version[4]) : null,
-          versionOther: !!version ? parseVersionNumber(version[5]) : null,
-          isFixed: /^\d/.test(dependencies[key]),
-          isWildcard: dependencies[key] === "*",
-          from,
-          type,
-        };
-        result = { ...result, [key]: current };
-      });
-      return result;
-    };
-
-    const addPackageJsonInfos = (json) => {};
 
     // TODO remove when adding packager detection
     const packager = "yarn";
