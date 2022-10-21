@@ -5,7 +5,7 @@ import { Listr } from "listr2";
 import delay from "delay";
 import path from "path";
 
-import { readPackageJson } from "../lib/files.js";
+import { readPackageJson, writeOutputFile } from "../lib/files.js";
 import { parseDependencies } from "../lib/deps-analyzer.js";
 import { formatJSON } from "../lib/utils.js";
 
@@ -129,7 +129,7 @@ program
       {
         title: "Displaying output",
         task: async (ctx, task) => {
-          task.output = formatJSON({
+          const jsonOutput = formatJSON({
             deps: parseDependencies(ctx.rootPackageJson.dependencies),
             devDeps: parseDependencies(
               ctx.rootPackageJson.devDependencies,
@@ -140,6 +140,10 @@ program
               "peer"
             ),
           });
+          if (output && output !== "stdout") {
+            writeOutputFile(output, jsonOutput);
+          }
+          task.output = jsonOutput;
           await delay(800);
         },
         options: {
