@@ -7,6 +7,7 @@ import path from "path";
 
 import { readPackageJson } from "../lib/files.js";
 import { parseDependencies } from "../lib/deps-analyzer.js";
+import { formatJSON } from "../lib/utils.js";
 
 program
   .name("deps-analyzer")
@@ -128,24 +129,24 @@ program
       {
         title: "Displaying output",
         task: async (ctx, task) => {
-          task.output = JSON.stringify(
-            {
-              deps: parseDependencies(ctx.rootPackageJson.dependencies),
-              devDeps: parseDependencies(
-                ctx.rootPackageJson.devDependencies,
-                "dev"
-              ),
-              peerDeps: parseDependencies(
-                ctx.rootPackageJson.peerDependencies,
-                "peer"
-              ),
-            },
-            null,
-            2
-          );
-          await delay(500);
+          task.output = formatJSON({
+            deps: parseDependencies(ctx.rootPackageJson.dependencies),
+            devDeps: parseDependencies(
+              ctx.rootPackageJson.devDependencies,
+              "dev"
+            ),
+            peerDeps: parseDependencies(
+              ctx.rootPackageJson.peerDependencies,
+              "peer"
+            ),
+          });
+          await delay(800);
         },
-        options: { persistentOutput: true, bottomBar: Infinity },
+        options: {
+          persistentOutput: true,
+          bottomBar: Infinity,
+          showTimer: true,
+        },
       },
     ]);
 
