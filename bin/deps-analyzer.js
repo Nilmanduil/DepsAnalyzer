@@ -99,60 +99,63 @@ program
 
     let dependencies = {};
 
-    const tasks = new Listr([
-      {
-        title: "Parsing root package.json file",
-        task: (ctx, task) => {
-          const rootPackageJsonPath = path.join(directory, "package.json");
-          const rootPackageJson = readPackageJson(rootPackageJsonPath);
-          ctx.rootPackageJsonPath = rootPackageJsonPath;
-          ctx.rootPackageJson = rootPackageJson;
+    const tasks = new Listr(
+      [
+        {
+          title: "Parsing root package.json file",
+          task: (ctx, task) => {
+            const rootPackageJsonPath = path.join(directory, "package.json");
+            const rootPackageJson = readPackageJson(rootPackageJsonPath);
+            ctx.rootPackageJsonPath = rootPackageJsonPath;
+            ctx.rootPackageJson = rootPackageJson;
+          },
         },
-      },
-      {
-        title: "Parsing packages package.json files",
-        skip: !monorepo,
-        task: (ctx, task) => {},
-      },
-      {
-        title: "Checking installed versions",
-        task: (ctx, task) => {},
-      },
-      {
-        title: "Fetching info from NPM registry",
-        task: (ctx, task) => {},
-      },
-      {
-        title: "Fetching security info",
-        task: (ctx, task) => {},
-      },
-      {
-        title: "Displaying output",
-        task: async (ctx, task) => {
-          const jsonOutput = formatJSON({
-            deps: parseDependencies(ctx.rootPackageJson.dependencies),
-            devDeps: parseDependencies(
-              ctx.rootPackageJson.devDependencies,
-              "dev"
-            ),
-            peerDeps: parseDependencies(
-              ctx.rootPackageJson.peerDependencies,
-              "peer"
-            ),
-          });
-          if (output && output !== "stdout") {
-            writeOutputFile(output, jsonOutput);
-          }
-          task.output = jsonOutput;
-          await delay(800);
+        {
+          title: "Parsing packages package.json files",
+          skip: !monorepo,
+          task: (ctx, task) => {},
         },
-        options: {
-          persistentOutput: true,
-          bottomBar: Infinity,
-          showTimer: true,
+        {
+          title: "Checking installed versions",
+          task: (ctx, task) => {},
         },
-      },
-    ]);
+        {
+          title: "Fetching info from NPM registry",
+          task: (ctx, task) => {},
+        },
+        {
+          title: "Fetching security info",
+          task: (ctx, task) => {},
+        },
+        {
+          title: "Displaying output",
+          task: async (ctx, task) => {
+            const jsonOutput = formatJSON({
+              deps: parseDependencies(ctx.rootPackageJson.dependencies),
+              devDeps: parseDependencies(
+                ctx.rootPackageJson.devDependencies,
+                "dev"
+              ),
+              peerDeps: parseDependencies(
+                ctx.rootPackageJson.peerDependencies,
+                "peer"
+              ),
+            });
+            if (output && output !== "stdout") {
+              writeOutputFile(output, jsonOutput);
+            }
+            task.output = jsonOutput;
+            await delay(800);
+          },
+          options: {
+            persistentOutput: true,
+            bottomBar: Infinity,
+            showTimer: true,
+          },
+        },
+      ],
+      { concurrent: false, renderer: "simple" }
+    );
 
     const ctx = await tasks.run();
   })
