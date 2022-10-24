@@ -97,8 +97,6 @@ program
       });
     }
 
-    let dependencies = {};
-
     const tasks = new Listr(
       [
         {
@@ -106,8 +104,28 @@ program
           task: (ctx, task) => {
             const rootPackageJsonPath = path.join(directory, "package.json");
             const rootPackageJson = readPackageJson(rootPackageJsonPath);
-            ctx.rootPackageJsonPath = rootPackageJsonPath;
-            ctx.rootPackageJson = rootPackageJson;
+            ctx.root = {
+              packageJsonPath: rootPackageJsonPath,
+              packageJson: rootPackageJson,
+              deps: parseDependencies(rootPackageJson.dependencies),
+              devDeps: parseDependencies(
+                rootPackageJson.devDependencies,
+                "dev"
+              ),
+              peerDeps: parseDependencies(
+                rootPackageJson.peerDependencies,
+                "peer"
+              ),
+              optionalDeps: parseDependencies(
+                rootPackageJson.optionalDependencies,
+                "optional"
+              ),
+              bundleDeps: parseDependencies(
+                rootPackageJson.bundleDependencies,
+                "bundle"
+              ),
+            };
+            ctx.allDependenciesSynthesis = {};
           },
         },
         {
@@ -130,25 +148,7 @@ program
         {
           title: "Displaying output",
           task: async (ctx, task) => {
-            const jsonOutput = formatJSON({
-              deps: parseDependencies(ctx.rootPackageJson.dependencies),
-              devDeps: parseDependencies(
-                ctx.rootPackageJson.devDependencies,
-                "dev"
-              ),
-              peerDeps: parseDependencies(
-                ctx.rootPackageJson.peerDependencies,
-                "peer"
-              ),
-              optionalDeps: parseDependencies(
-                ctx.rootPackageJson.optionalDependencies,
-                "optional"
-              ),
-              bundleDeps: parseDependencies(
-                ctx.rootPackageJson.bundleDependencies,
-                "bundle"
-              ),
-            });
+            const jsonOutput = formatJSON(ctx);
             if (output && output !== "stdout") {
               writeOutputFile(output, jsonOutput);
             }
