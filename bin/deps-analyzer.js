@@ -140,6 +140,14 @@ program
                 ctx.rootPackageJson.peerDependencies,
                 "peer"
               ),
+              optionalDeps: parseDependencies(
+                ctx.rootPackageJson.optionalDependencies,
+                "optional"
+              ),
+              bundleDeps: parseDependencies(
+                ctx.rootPackageJson.bundleDependencies,
+                "bundle"
+              ),
             });
             if (output && output !== "stdout") {
               writeOutputFile(output, jsonOutput);
