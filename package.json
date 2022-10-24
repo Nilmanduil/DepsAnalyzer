@@ -14,10 +14,15 @@
   "keywords": [
     "cli",
     "node",
+    "nodejs",
+    "javascript",
     "dependencies",
     "analysis",
     "security"
   ],
+  "scripts": {
+    "test": "echo 'No tests yet!'"
+  },
   "dependencies": {
     "commander": "9.4.1",
     "listr2": "5.0.5",
