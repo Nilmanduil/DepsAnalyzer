@@ -21,11 +21,19 @@
     "security"
   ],
   "scripts": {
+    "lint": "prettier --ignore-path .gitignore --check --plugin-search-dir=. . && eslint .",
+    "lint:precommit": "prettier --write --ignore-path .gitignore --check --plugin-search-dir=. . && eslint --fix .",
     "test": "echo 'No tests yet!'"
   },
   "dependencies": {
     "commander": "9.4.1",
-    "listr2": "5.0.5",
-    "delay": "5.0.0"
+    "delay": "5.0.0",
+    "listr2": "5.0.5"
+  },
+  "devDependencies": {
+    "eslint": "8.26.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "prettier": "2.7.1"
   }
 }
