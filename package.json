@@ -23,6 +23,7 @@
   "scripts": {
     "lint": "prettier --ignore-path .gitignore --check --plugin-search-dir=. . && eslint .",
     "lint:precommit": "prettier --write --ignore-path .gitignore --check --plugin-search-dir=. . && eslint --fix .",
+    "postinstall": "husky install",
     "test": "echo 'No tests yet!'"
   },
   "dependencies": {
@@ -31,9 +32,23 @@
     "listr2": "5.0.5"
   },
   "devDependencies": {
+    "@commitlint/cli": "17.1.2",
+    "@commitlint/config-conventional": "17.1.0",
     "eslint": "8.26.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-prettier": "4.2.1",
+    "husky": "8.0.1",
     "prettier": "2.7.1"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint"
+    }
   }
 }
