@@ -5,7 +5,11 @@ import { Listr } from "listr2";
 import delay from "delay";
 import path from "path";
 
-import { readPackageJson, writeOutputFile } from "../lib/files.js";
+import {
+  readPackageJson,
+  listPackageJsonFiles,
+  writeOutputFile,
+} from "../lib/files.js";
 import { parseDependencies } from "../lib/deps-analyzer.js";
 import { formatJSON } from "../lib/utils.js";
 
@@ -135,7 +139,9 @@ program
         },
         {
           title: "Checking installed versions",
-          task: (ctx, task) => {},
+          task: (ctx, task) => {
+            ctx.depsPackageJSONList = listPackageJsonFiles();
+          },
         },
         {
           title: "Fetching info from NPM registry",
