@@ -10,7 +10,7 @@ import {
   listPackageJsonFiles,
   writeOutputFile,
 } from "../lib/files.js";
-import { parseDependencies } from "../lib/deps-analyzer.js";
+import { parseDependencies, parseVersion } from "../lib/deps-analyzer.js";
 import { formatJSON } from "../lib/utils.js";
 
 program
@@ -129,7 +129,13 @@ program
                 "bundle"
               ),
             };
-            ctx.allDependenciesSynthesis = {};
+            ctx.allDependenciesSynthesis = {
+              ...ctx.root.deps,
+              ...ctx.root.devDeps,
+              ...ctx.root.peerDeps,
+              ...ctx.root.optionalDeps,
+              ...ctx.root.bundleDeps,
+            };
           },
         },
         {
@@ -141,6 +147,26 @@ program
           title: "Checking installed versions",
           task: (ctx, task) => {
             ctx.depsPackageJSONList = listPackageJsonFiles();
+            ctx.depsPackageJSONList.forEach((jsonPath) => {
+              let { name, version } = readPackageJson(jsonPath, false);
+
+              if (
+                name &&
+                typeof name === "string" &&
+                version &&
+                typeof version === "string" &&
+                ctx.allDependenciesSynthesis[name] !== undefined
+              ) {
+                ctx.allDependenciesSynthesis[name] = {
+                  ...ctx.allDependenciesSynthesis[name],
+                  installedVersion: version,
+                  installedVersionMajor: parseVersion(version)["versionMajor"],
+                  installedVersionMinor: parseVersion(version)["versionMinor"],
+                  installedVersionPatch: parseVersion(version)["versionPatch"],
+                  installedVersionOther: parseVersion(version)["versionOther"],
+                };
+              }
+            });
           },
         },
         {

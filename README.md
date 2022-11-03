@@ -91,7 +91,7 @@ Please adhere to this project's [code of conduct](CODE_OF_CONDUCT.md).
 ## Roadmap
 
 - [x] List dependencies in package.json
-- [ ] List installed dependencies in lockfile
+- [x] List installed dependencies
 - [ ] Check latest version of dependencies
 - [ ] Check NPM audit for security purposes
 - [ ] Output to JSON (to use with custom scripts or CI, for instance) or CSV (for easy copy/paste in spreadsheets) format
